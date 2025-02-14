@@ -1,0 +1,1 @@
+# Lupa Search WooCommerce Plugin
