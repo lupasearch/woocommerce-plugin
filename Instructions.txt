@@ -1,0 +1,22 @@
+To get your API keys visit:
+https://console.lupasearch.com/login
+
+Get your plugin configuration
+https://console.lupasearch.com/dashboard/eimantas/woocommerce/plugin
+
+Enter the name of one of Searh indices:
+https://console.lupasearch.com/dashboard/eimantas/woocommerce/indices
+
+Default: `sample-products`
+
+Read our getting started guide:
+
+
+Add it to your site:
+Guttenberg block - visit page and add the Lupa Search Blocks
+
+Search Results page:
+Create a default search results page, where the results will be populated.
+
+Default: `/search-results`
+

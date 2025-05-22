@@ -18,9 +18,9 @@ get_header();
         // Output LupaSearch search box and results containers
         if (class_exists('LupaSearch_Blocks')) {
             $blocks_instance = new LupaSearch_Blocks();
-            echo $blocks_instance->render_search_box();
+            echo wp_kses_post($blocks_instance->render_search_box());
             echo '<div style="margin-bottom: 20px;"></div>';
-            echo $blocks_instance->render_search_results();
+            echo wp_kses_post($blocks_instance->render_search_results());
         } else {
             // Fallback if the class isn't loaded
             echo '<div><div id="searchBox"></div></div>';

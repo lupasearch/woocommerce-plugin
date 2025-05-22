@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 registerBlockType('lupasearch/search-results', {
     apiVersion: 3,
     // Title and category are typically defined in block.json
-    // title: __('LupaSearch Results', 'lupasearch'), // Already in block.json
+    // title: __('LupaSearch Results', 'lupasearch-woo'), // Already in block.json
     icon: 'list-view',
     // category: 'widgets', // Already in block.json
     
@@ -35,7 +35,7 @@ registerBlockType('lupasearch/search-results', {
                     border: '1px dashed #ccc',
                     textAlign: 'center'
                 }}>
-                    {__('LupaSearch Results', 'lupasearch')}
+                    {__('LupaSearch Results', 'lupasearch-woo')}
                 </div>
             </div>
         );

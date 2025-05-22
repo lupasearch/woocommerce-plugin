@@ -26,7 +26,7 @@ class LupaSearch_Document_Generator {
             }
 
             // Generate unique filename
-            $filename = 'lupasearch-products-' . date('Y-m-d-His') . '.json';
+            $filename = 'lupasearch-products-' . gmdate('Y-m-d-His') . '.json';
             $filepath = $this->upload_dir['path'] . '/' . $filename;
             
             // Save JSON file
@@ -105,70 +105,50 @@ class LupaSearch_Document_Generator {
         );
     }
 
-    private function format_products($products) {
-        $formatted_products = array();
+    private function format_products($products_data_from_provider) { // Renamed parameter
+        $formatted_documents = array();
 
-        foreach ($products as $product) {
-            // Price logic:
-            // 'price' is the regular price.
-            // 'final_price' is the sale price, or regular price if not on sale.
-            $regular_price_raw = $product['price']; // From LupaSearch_Product_Provider
-            $sale_price_raw = $product['final_price']; // From LupaSearch_Product_Provider, this is WC's get_price()
+        foreach ($products_data_from_provider as $product_data) {
+            $document = $this->format_common_product_data($product_data);
+            $product_type = $product_data['product_type'] ?? 'simple'; // Default if not set
 
-            $price_val = !empty($regular_price_raw) ? (float) $regular_price_raw : null;
-            // If sale_price_raw is empty OR if it's the same as regular_price_raw (meaning no specific sale price is set, WC get_price() returns regular)
-            // then final_price should be the same as price_val.
-            // If sale_price_raw is different and not empty, it's the actual final price.
-            $final_price_val = !empty($sale_price_raw) ? (float) $sale_price_raw : $price_val;
-            // Ensure final_price is not null if price_val is set
-            if (is_null($final_price_val) && !is_null($price_val)) {
-                $final_price_val = $price_val;
+            $document['type'] = $product_type; // LupaSearch type field
+
+            if ($product_type === 'parent') {
+                // Parent specific fields already set in format_common_product_data
+                // Price for parent: use its own price fields which might be min variation price
+                // Stock for parent: can be an aggregation or based on its own settings
+                $document['is_group_head'] = true; // Example field to identify parent
+            } elseif ($product_type === 'variation') {
+                $document['parent_id'] = $product_data['parent_id'];
+                $document['sku'] = $product_data['sku'] ?? '';
+                // Variation attributes (flattened)
+                if (!empty($product_data['variation_attributes_raw']) && is_array($product_data['variation_attributes_raw'])) {
+                    foreach ($product_data['variation_attributes_raw'] as $taxonomy => $term_slug) {
+                        $attribute_slug = str_replace('attribute_', '', $taxonomy); // pa_color -> color
+                        $attribute_slug = str_replace('pa_', '', $attribute_slug); // pa_color -> color
+                        
+                        $term = get_term_by('slug', $term_slug, $taxonomy);
+                        if ($term && !is_wp_error($term)) {
+                            $document[$attribute_slug] = $term->name;
+                        } else {
+                            // Fallback if term name not found, use slug (might need better handling)
+                            $document[$attribute_slug] = $term_slug;
+                        }
+                    }
+                }
             }
+            // For 'simple' type, common data is usually enough.
 
-
-            $formatted_product = array(
-                'id' => $product['id'],
-                'visibility' => $product['visibility'],
-                'description' => $product['description'],
-                'description_short' => $product['description_short'],
-                'name' => $product['title'], // 'name' comes from 'title' in provider
-                'price' => $price_val,
-                'final_price' => $final_price_val,
-                'categories' => $product['category_names'] ?? [], // 'categories' are names
-                'category_ids' => $product['category_ids'] ?? [],
-                'images' => $product['images'] ?? [], // 'images' are gallery images
-                'image' => $product['main_image'] ?? '', // Renamed from main_image
-                'url' => $product['url'],
-                'qty' => isset($product['stock_quantity']) ? (int) $product['stock_quantity'] : 0,
-                'instock' => (bool) $product['is_in_stock'],
-                // Retain other fields if they are still relevant or add them as needed
-                // For example, rating and other attributes:
-                'rating' => $this->get_product_rating($product['id']),
-                // 'brand' => $this->get_product_attribute($product, 'brand'), // Example
-                // 'color' => $this->get_product_attribute($product, 'color'), // Example
-            );
-
-            // Clean up any null values to avoid issues with LupaSearch indexing if it's strict
-            // $formatted_product = array_filter($formatted_product, function($value) {
-            //     return !is_null($value);
-            // });
-
-            $formatted_products[] = $formatted_product;
+            $formatted_documents[] = $document;
         }
-
-        return $formatted_products;
+        return $formatted_documents;
     }
 
-    public function format_single_product_from_data(array $product_data_from_provider) {
-        if (empty($product_data_from_provider) || !isset($product_data_from_provider['id'])) {
-            // Or throw an exception, or return an error structure
-            return null; 
-        }
-        
-        // Reuse the logic from format_products for a single item
-        // Price logic:
-        $regular_price_raw = $product_data_from_provider['price'];
-        $sale_price_raw = $product_data_from_provider['final_price'];
+    // New helper method for common data formatting
+    private function format_common_product_data(array $product_data) {
+        $regular_price_raw = $product_data['price'] ?? null;
+        $sale_price_raw = $product_data['final_price'] ?? null;
 
         $price_val = !empty($regular_price_raw) ? (float) $regular_price_raw : null;
         $final_price_val = !empty($sale_price_raw) ? (float) $sale_price_raw : $price_val;
@@ -176,25 +156,65 @@ class LupaSearch_Document_Generator {
             $final_price_val = $price_val;
         }
 
-        $formatted_product = array(
-            'id' => $product_data_from_provider['id'],
-            'visibility' => $product_data_from_provider['visibility'],
-            'description' => $product_data_from_provider['description'],
-            'description_short' => $product_data_from_provider['description_short'],
-            'name' => $product_data_from_provider['title'], // 'name' comes from 'title' in provider
-            'price' => $price_val,
-            'final_price' => $final_price_val,
-            'categories' => $product_data_from_provider['category_names'] ?? [],
-            'category_ids' => $product_data_from_provider['category_ids'] ?? [],
-            'images' => $product_data_from_provider['images'] ?? [],
-            'image' => $product_data_from_provider['main_image'] ?? '', // Renamed from main_image
-            'url' => $product_data_from_provider['url'],
-            'qty' => isset($product_data_from_provider['stock_quantity']) ? (int) $product_data_from_provider['stock_quantity'] : 0,
-            'instock' => (bool) $product_data_from_provider['is_in_stock'],
-            'rating' => $this->get_product_rating($product_data_from_provider['id']),
+        // Base document structure
+        $document = array(
+            'id'                => $product_data['id'],
+            'title'             => $product_data['title'], // For variations, this is parent's title
+            'description'       => $product_data['description'] ?? '',
+            'description_short' => $product_data['description_short'] ?? '',
+            'price'             => $price_val,
+            'final_price'       => $final_price_val,
+            'categories'        => $product_data['category_names'] ?? [],
+            'category_ids'      => $product_data['category_ids'] ?? [],
+            'image'             => $product_data['main_image'] ?? '', // Main image (variation or parent)
+            'images'            => $product_data['images'] ?? [],     // Gallery (parent's gallery for variations)
+            'url'               => $product_data['url'],
+            'visibility'        => $product_data['visibility'] ?? 'visible',
+            'qty'               => isset($product_data['stock_quantity']) ? (int) $product_data['stock_quantity'] : 0,
+            'instock'           => (bool) ($product_data['is_in_stock'] ?? false),
+            'rating'            => $this->get_product_rating($product_data['id']),
+            'tags'              => $product_data['tags'] ?? [],
+            'sku'               => $product_data['sku'] ?? '', // SKU for simple/parent, variation SKU handled below
         );
+        return $document;
+    }
+
+
+    public function format_single_product_from_data(array $product_data_from_provider) {
+        if (empty($product_data_from_provider) || !isset($product_data_from_provider['id'])) {
+            return null; 
+        }
         
-        return $formatted_product;
+        // This method now expects a single product data array from the provider
+        // It will be one item from the array that get_products() or get_data_for_single_product() (for cron) returns
+        
+        $document = $this->format_common_product_data($product_data_from_provider);
+        $product_type = $product_data_from_provider['product_type'] ?? 'simple';
+
+        $document['type'] = $product_type;
+
+        if ($product_type === 'parent') {
+            $document['is_group_head'] = true;
+        } elseif ($product_type === 'variation') {
+            $document['parent_id'] = $product_data_from_provider['parent_id'];
+            // SKU is already set by format_common_product_data if available at top level from provider
+            // If variation_attributes_raw is set, process it
+            if (!empty($product_data_from_provider['variation_attributes_raw']) && is_array($product_data_from_provider['variation_attributes_raw'])) {
+                foreach ($product_data_from_provider['variation_attributes_raw'] as $taxonomy => $term_slug) {
+                    $attribute_slug = str_replace('attribute_', '', $taxonomy);
+                    $attribute_slug = str_replace('pa_', '', $attribute_slug);
+                    
+                    $term = get_term_by('slug', $term_slug, $taxonomy);
+                    if ($term && !is_wp_error($term)) {
+                        $document[$attribute_slug] = $term->name;
+                    } else {
+                        $document[$attribute_slug] = $term_slug;
+                    }
+                }
+            }
+        }
+        
+        return $document;
     }
 
     private function get_product_attribute($product, $attribute_name) {

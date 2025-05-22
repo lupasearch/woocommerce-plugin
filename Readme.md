@@ -1,18 +1,18 @@
 # LupaSearch for WooCommerce
 
-**Contributors:** (Your Name/Company), LupaSearch Team
-**Tags:** woocommerce, search, product search, faceted search, woocommerce search, instant search, lupa, lupasearch
+**Contributors:** lupasearchteam
+**Tags:** woocommerce, search, product search, faceted search, instant search
 **Requires at least:** 5.0
-**Tested up to:** 6.5
+**Tested up to:** 6.8
 **Stable tag:** 1.0.0
-**License:** GPLv2 or later
-**License URI:** https://www.gnu.org/licenses/gpl-2.0.html
+**License:** MIT
+**License URI:** https://opensource.org/licenses/MIT
 
-Supercharge your WooCommerce store's search functionality with LupaSearch. Provide your customers with a fast, relevant, and intuitive search experience.
+Supercharge your WooCommerce store's search with LupaSearch. Offer customers a fast, relevant, and intuitive product search experience.
 
 ## Description
 
-LupaSearch is a powerful, AI-driven search solution designed to help your customers find exactly what they're looking for, quickly and easily. This plugin seamlessly integrates LupaSearch with your WooCommerce store, replacing the default search with a feature-rich, customizable search interface.
+LupaSearch is a powerful, AI-driven search solution designed to help your customers find exactly what they're looking for, quickly and easily.
 
 **Key Features:**
 

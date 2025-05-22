@@ -13,7 +13,9 @@ class LupaSearch_Blocks {
         wp_register_script(
             'lupasearch-blocks-editor',
             plugins_url('/blocks/build/index.js', dirname(__FILE__)),
-            array('wp-blocks', 'wp-element', 'wp-editor', 'wp-components')
+            array('wp-blocks', 'wp-element', 'wp-editor', 'wp-components'),
+            '1.0.0', // Version
+            true     // In footer
         );
 
         // Register each block

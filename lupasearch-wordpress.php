@@ -6,7 +6,7 @@
  * Author: LupaSearch
  * Author URI: https://lupasearch.com
  * License: MIT
- * Text Domain: lupasearch
+ * Text Domain: lupasearch-woo
  * Domain Path: /languages
  */
 
@@ -33,7 +33,7 @@ require_once LUPASEARCH_PLUGIN_DIR . 'includes/class-lupasearch-blocks.php';
 // Initialize plugin
 function lupasearch_init() {
     // Load plugin textdomain
-    load_plugin_textdomain('lupasearch', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+    load_plugin_textdomain('lupasearch-woo', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 
     new LupaSearch_Admin();
     new LupaSearch_Frontend();

@@ -31,3 +31,26 @@
         width: 100%;
     }
 }
+
+/* Added for image display */
+.lupasearch-logo-image {
+    background-image: url('../images/lupasearch-logo.png');
+    background-repeat: no-repeat;
+    background-size: contain; /* Adjust as needed: cover, contain, or specific %/px */
+    width: 150px; /* Placeholder: Adjust to actual image width or desired display width */
+    height: 40px; /* Placeholder: Adjust to actual image height or desired display height */
+    display: inline-block; /* Or block, depending on layout needs */
+    margin-bottom: 10px; /* Example: if the logo needs space below it before the button */
+}
+
+.lupasearch-builder-preview-image {
+    background-image: url('../images/search-builder.png');
+    background-repeat: no-repeat;
+    background-size: contain; /* Adjust as needed */
+    width: 100%; /* Make it responsive within its container */
+    max-width: 500px; /* Placeholder: Adjust to actual image width or desired max display width */
+    height: 350px; /* Placeholder: Adjust to maintain aspect ratio or desired display height */
+    border: 1px solid #ddd; /* Optional: if a border is desired */
+    margin: 0 auto; /* Center the block if its container is wider */
+    display: block; /* To allow margin auto centering */
+}
