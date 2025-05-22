@@ -1,11 +1,13 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { useBlockProps } from '@wordpress/block-editor';
+import { __ } from '@wordpress/i18n';
 
 registerBlockType('lupasearch/search-results', {
     apiVersion: 3,
-    title: 'LupaSearch Results',
+    // Title and category are typically defined in block.json
+    // title: __('LupaSearch Results', 'lupasearch'), // Already in block.json
     icon: 'list-view',
-    category: 'widgets',
+    // category: 'widgets', // Already in block.json
     
     // Add supports property
     supports: {
@@ -33,7 +35,7 @@ registerBlockType('lupasearch/search-results', {
                     border: '1px dashed #ccc',
                     textAlign: 'center'
                 }}>
-                    LupaSearch Results
+                    {__('LupaSearch Results', 'lupasearch')}
                 </div>
             </div>
         );

@@ -13,6 +13,7 @@ class LupaSearch_Admin {
         add_action('wp_ajax_test_lupa_connection', array($this, 'ajax_test_connection'));
         add_action('wp_ajax_generate_lupasearch_documents', array($this, 'ajax_generate_documents'));
         add_action('wp_ajax_import_lupasearch_documents', array($this, 'ajax_import_documents'));
+        add_action('wp_ajax_clear_lupasearch_logs', array($this, 'ajax_clear_lupasearch_logs')); // New AJAX handler
         
         // AJAX handlers for non-logged-in users
         add_action('wp_ajax_nopriv_test_lupa_connection', array($this, 'handle_unauthorized_request'));
@@ -28,8 +29,8 @@ class LupaSearch_Admin {
 
     public function add_admin_menu() {
         add_menu_page(
-            'LupaSearch', 
-            'LupaSearch',
+            __('LupaSearch', 'lupasearch'), 
+            __('LupaSearch', 'lupasearch'),
             'manage_options',
             'lupasearch',
             array($this, 'render_settings_page'),
@@ -44,6 +45,7 @@ class LupaSearch_Admin {
         register_setting('lupasearch_options', LupaSearch_Config::OPTION_ORGANIZATION);
         register_setting('lupasearch_options', LupaSearch_Config::OPTION_PROJECT);
         register_setting('lupasearch_options', 'lupasearch_auto_sync');
+        register_setting('lupasearch_options', 'lupasearch_override_wp_search'); // New setting
     }
 
     public function enqueue_admin_scripts($hook) {
@@ -61,10 +63,15 @@ class LupaSearch_Admin {
         wp_enqueue_script(
             'lupasearch-admin',
             plugins_url('/js/admin.js', dirname(dirname(__FILE__))),
-            array('jquery'),
+            array('jquery', 'wp-i18n'), // Added wp-i18n
             '1.0.0',
             true
         );
+
+        // After enqueuing the script and its dependencies (including wp-i18n)
+        // We can make the translations available to the script.
+        wp_set_script_translations('lupasearch-admin', 'lupasearch', plugin_dir_path(dirname(__FILE__)) . 'languages');
+
 
         wp_localize_script('lupasearch-admin', 'lupaSearchAdmin', array(
             'ajax_url' => admin_url('admin-ajax.php'),
@@ -88,19 +95,19 @@ class LupaSearch_Admin {
                     <h2 class="nav-tab-wrapper">
                         <a href="?page=lupasearch&tab=general" 
                            class="nav-tab <?php echo $active_tab == 'general' ? 'nav-tab-active' : ''; ?>">
-                            General Setup
+                            <?php esc_html_e('General Setup', 'lupasearch'); ?>
                         </a>
                         <a href="?page=lupasearch&tab=api" 
                            class="nav-tab <?php echo $active_tab == 'api' ? 'nav-tab-active' : ''; ?>">
-                            API Setup
+                            <?php esc_html_e('API Setup', 'lupasearch'); ?>
                         </a>
                         <a href="?page=lupasearch&tab=design" 
                            class="nav-tab <?php echo $active_tab == 'design' ? 'nav-tab-active' : ''; ?>">
-                            Design
+                            <?php esc_html_e('Design', 'lupasearch'); ?>
                         </a>
                         <a href="?page=lupasearch&tab=logs" 
                            class="nav-tab <?php echo $active_tab == 'logs' ? 'nav-tab-active' : ''; ?>">
-                            Logs
+                            <?php esc_html_e('Logs', 'lupasearch'); ?>
                         </a>
                     </h2>
 
@@ -131,40 +138,33 @@ class LupaSearch_Admin {
                 <div class="lupasearch-sidebar">
                     <div class="lupasearch-logo">
                         <img src="<?php echo esc_url(plugins_url('/images/lupasearch-logo.png', dirname(dirname(__FILE__)))); ?>" 
-                             alt="LupaSearch Logo">
+                             alt="<?php esc_attr_e('LupaSearch Logo', 'lupasearch'); ?>">
                         <a href="<?php echo esc_url('https://console.lupasearch.com/dashboard/' . esc_attr(LupaSearch_Config::get_organization()) . '/analytics'); ?>" 
                            target="_blank" 
                            class="button button-primary button-large">
-                            Visit LupaSearch Console
+                            <?php esc_html_e('Visit LupaSearch Console', 'lupasearch'); ?>
                         </a>
                     </div>
 
-                    <h3>Configuration Status</h3>
+                    <h3><?php esc_html_e('Configuration Status', 'lupasearch'); ?></h3>
                     <?php $this->render_configuration_status($config_status); ?>
 
                     <div class="lupasearch-connection">
-                        <h3>Connection Status</h3>
+                        <h3><?php esc_html_e('Connection Status', 'lupasearch'); ?></h3>
                         <div class="lupasearch-connection-status">
                             <div class="connection-header">
                                 <button type="button" id="test-connection" class="button button-secondary">
-                                    Test Connection
+                                    <?php esc_html_e('Test Connection', 'lupasearch'); ?>
                                 </button>
                                 <span id="connection-status"></span>
                             </div>
                             <div id="connection-details" class="connection-details" style="display: none;">
                                 <div class="stats-grid">
                                     <div class="stat-item">
-                                        <label>Total Products:</label>
+                                        <label><?php esc_html_e('Total Products:', 'lupasearch'); ?></label>
                                         <strong><?php echo esc_html($total_products); ?></strong>
                                     </div>
-                                    <div class="stat-item">
-                                        <label>Indexed Products:</label>
-                                        <strong id="indexed-products">-</strong>
-                                    </div>
-                                    <div class="stat-item">
-                                        <label>Active Indices:</label>
-                                        <strong id="active-indices">-</strong>
-                                    </div>
+                                   
                                 </div>
                                 <div id="available-indices" class="indices-list"></div>
                             </div>
@@ -172,26 +172,26 @@ class LupaSearch_Admin {
                     </div>
 
                     <div class="lupasearch-getting-started">
-                        <h3>Getting Started</h3>
+                        <h3><?php esc_html_e('Getting Started', 'lupasearch'); ?></h3>
                         <ul>
                             <li>
                                 <a href="https://console.lupasearch.com/login" target="_blank">
-                                    Get API Keys →
+                                    <?php esc_html_e('Get API Keys →', 'lupasearch'); ?>
                                 </a>
                             </li>
                             <li>
                                 <a href="https://console.lupasearch.com/dashboard/<?php echo esc_attr(LupaSearch_Config::get_organization()); ?>/woocommerce/plugin" target="_blank">
-                                    Plugin Configuration →
+                                    <?php esc_html_e('Plugin Configuration →', 'lupasearch'); ?>
                                 </a>
                             </li>
                             <li>
                                 <a href="https://console.lupasearch.com/dashboard/<?php echo esc_attr(LupaSearch_Config::get_organization()); ?>/woocommerce/analytics" target="_blank">
-                                    Search Analytics →
+                                    <?php esc_html_e('Search Analytics →', 'lupasearch'); ?>
                                 </a>
                             </li>
                             <li>
                                 <a href="https://docs.lupasearch.com/guides/woocommerce" target="_blank">
-                                    Documentation →
+                                    <?php esc_html_e('Documentation →', 'lupasearch'); ?>
                                 </a>
                             </li>
                         </ul>
@@ -204,36 +204,48 @@ class LupaSearch_Admin {
 
     private function render_general_tab($total_products) {
         $sync_enabled = get_option('lupasearch_auto_sync', false);
+        $override_wp_search_enabled = get_option('lupasearch_override_wp_search', true); // Default to true
         ?>
         <div class="lupasearch-general-tab">
             <table class="form-table">
                 <tr>
-                    <th scope="row">Automatic Sync</th>
+                    <th scope="row"><?php esc_html_e('Automatic Sync', 'lupasearch'); ?></th>
                     <td>
                         <label>
                             <input type="checkbox" name="lupasearch_auto_sync" value="1" <?php checked($sync_enabled); ?>>
-                            Enable automatic product sync
+                            <?php esc_html_e('Enable automatic product sync', 'lupasearch'); ?>
                         </label>
-                        <p class="description">Automatically sync product changes to LupaSearch</p>
+                        <p class="description"><?php esc_html_e('Automatically sync product changes to LupaSearch', 'lupasearch'); ?></p>
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row">Manual Sync</th>
+                    <th scope="row"><?php esc_html_e('Override WordPress Search', 'lupasearch'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="lupasearch_override_wp_search" value="1" <?php checked($override_wp_search_enabled); ?>>
+                            <?php esc_html_e('Enable LupaSearch on default WordPress search results page', 'lupasearch'); ?>
+                        </label>
+                        <p class="description"><?php esc_html_e('When enabled, LupaSearch will power the search results at URLs like', 'lupasearch'); ?> <code>/?s=query</code>.</p>
+                    </td>
+                </tr>
+                <!-- TODO: Hiding now, for reviewing this feature later. -->
+                <tr style="display:none;">
+                    <th scope="row"><?php esc_html_e('Manual Sync', 'lupasearch'); ?></th>
                     <td>
                         <button type="button" id="reindex-all" class="button button-primary">
-                            Reindex All Products
+                            <?php esc_html_e('Reindex All Products', 'lupasearch'); ?>
                         </button>
                         <span id="reindex-status"></span>
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row">Document Generation</th>
+                    <th scope="row"><?php esc_html_e('Document Generation', 'lupasearch'); ?></th>
                     <td>
                         <button type="button" id="generate-documents" class="button button-secondary">
-                            Generate Documents JSON
+                            <?php esc_html_e('Generate Documents JSON', 'lupasearch'); ?>
                         </button>
                         <button type="button" id="import-documents" class="button button-primary">
-                            Import to LupaSearch
+                            <?php esc_html_e('Import to LupaSearch', 'lupasearch'); ?>
                         </button>
                         <span id="generation-status"></span>
                     </td>
@@ -245,55 +257,63 @@ class LupaSearch_Admin {
             <div class="lupasearch-documentation">
                 <div class="lupasearch-documentation-columns">
                     <div class="documentation-column">
-                        <h3>Import Instructions</h3>
+                        <h3><?php esc_html_e('Import Instructions', 'lupasearch'); ?></h3>
                         <ol class="steps-list">
                             <li>
                                 <span class="step-number">1</span>
                                 <div class="step-content">
-                                    <h4>Download Import File</h4>
-                                    <p>Click "Generate Documents JSON" to download the product data file</p>
+                                    <h4><?php esc_html_e('Download Import File', 'lupasearch'); ?></h4>
+                                    <p><?php esc_html_e('Click "Generate Documents JSON" to download the product data file', 'lupasearch'); ?></p>
                                 </div>
                             </li>
                             <li>
                                 <span class="step-number">2</span>
                                 <div class="step-content">
-                                    <h4>Navigate to Document Import Page</h4>
-                                    <p>Go to <a href="<?php echo esc_url('https://console.lupasearch.com/dashboard/' . esc_attr(LupaSearch_Config::get_organization()) . '/woocommerce/indices'); ?>" target="_blank">LupaSearch Console → Indices</a></p>
+                                    <h4><?php esc_html_e('Navigate to Document Import Page', 'lupasearch'); ?></h4>
+                                    <p><?php printf(esc_html__('Go to %sLupaSearch Console → Indices%s', 'lupasearch'), '<a href="' . esc_url('https://console.lupasearch.com/dashboard/' . esc_attr(LupaSearch_Config::get_organization()) . '/woocommerce/indices') . '" target="_blank">', '</a>'); ?></p>
                                 </div>
                             </li>
                             <li>
                                 <span class="step-number">Ʒ</span>
                                 <div class="step-content">
-                                    <h4>Start New Import</h4>
-                                    <p>Click the "New Import" button in the LupaSearch Console</p>
+                                    <h4><?php esc_html_e('Start New Import', 'lupasearch'); ?></h4>
+                                    <p><?php esc_html_e('Click the "New Import" button in the LupaSearch Console', 'lupasearch'); ?></p>
                                 </div>
                             </li>
                             <li>
                                 <span class="step-number">4</span>
                                 <div class="step-content">
-                                    <h4>Import JSON Data</h4>
-                                    <p>Copy and paste the contents of the downloaded JSON file into the import field</p>
+                                    <h4><?php esc_html_e('Import JSON Data', 'lupasearch'); ?></h4>
+                                    <p><?php esc_html_e('Copy and paste the contents of the downloaded JSON file into the import field', 'lupasearch'); ?></p>
                                 </div>
                             </li>
                         </ol>
                     </div>
 
                     <div class="documentation-column">
-                        <h3>Sample Document Structure</h3>
+                        <h3><?php esc_html_e('Sample Document Structure', 'lupasearch'); ?></h3>
                         <pre><?php echo esc_html(json_encode(array(
-                            "id" => "degnv3g4ui",
-                            "name" => "sample text",
-                            "brand" => "sample text",
-                            "color" => "sample text",
-                            "image" => "sample text",
-                            "price" => 1.23,
-                            "author" => "sample text",
-                            "gender" => "sample text",
-                            "rating" => 10,
-                            "category" => "sample text",
-                            "description" => "sample text",
-                            "alternativeImages" => "sample text",
-                            "url" => "https://example.com/product/sample-product"
+                            "id" => "product_123",
+                            "visibility" => "visible", // e.g., 'visible', 'catalog', 'search', 'hidden'
+                            "description" => "This is a full product description with details.",
+                            "description_short" => "A short and catchy description.",
+                            "name" => "Awesome Product Name",
+                            "price" => 29.99, // Regular price
+                            "final_price" => 24.99, // Sale price, or same as regular if not on sale
+                            "categories" => ["Electronics", "Gadgets"], // Array of category names
+                            "category_ids" => [15, 25], // Array of category IDs
+                            "images" => [
+                                "https://example.com/product/image1.jpg",
+                                "https://example.com/product/image2.jpg"
+                            ], // Array of gallery image URLs
+                            "main_image" => "https://example.com/product/main_image.jpg", // Main product image URL
+                            "url" => "https://example.com/product/awesome-product-name",
+                            "qty" => 50, // Stock quantity
+                            "instock" => true, // Stock status (boolean)
+                            "rating" => 4.5 // Average product rating
+                            // You can also include other custom attributes here if configured
+                            // "brand" => "SampleBrand",
+                            // "color" => "Blue",
                         ), JSON_PRETTY_PRINT)); ?></pre>
                     </div>
                 </div>
@@ -306,43 +326,57 @@ class LupaSearch_Admin {
         ?>
         <table class="form-table">
             <tr>
-                <th scope="row">Organization Name</th>
+                <th scope="row"><?php esc_html_e('Organization Name', 'lupasearch'); ?></th>
                 <td>
                     <input type="text" name="<?php echo LupaSearch_Config::OPTION_ORGANIZATION; ?>"
                            value="<?php echo esc_attr(LupaSearch_Config::get_organization()); ?>" class="regular-text">
-                    <p class="description">Enter your LupaSearch organization name</p>
+                    <p class="description"><?php esc_html_e('Enter your LupaSearch organization name', 'lupasearch'); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row">Project Name</th>
+                <th scope="row"><?php esc_html_e('Project Name', 'lupasearch'); ?></th>
                 <td>
                     <input type="text" name="<?php echo LupaSearch_Config::OPTION_PROJECT; ?>"
                            value="<?php echo esc_attr(LupaSearch_Config::get_project()); ?>" class="regular-text">
-                    <p class="description">Enter your LupaSearch project name</p>
+                    <p class="description"><?php esc_html_e('Enter your LupaSearch project name', 'lupasearch'); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row">API Key</th>
+                <th scope="row"><?php esc_html_e('API Key', 'lupasearch'); ?></th>
                 <td>
                     <input type="password" name="<?php echo LupaSearch_Config::OPTION_API_KEY; ?>"
                            value="<?php echo esc_attr(LupaSearch_Config::get_api_key()); ?>" class="regular-text">
-                    <p class="description">Your LupaSearch API Key</p>
+                    <p class="description"><?php esc_html_e('Your LupaSearch API Key', 'lupasearch'); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row">Product Index ID</th>
+                <th scope="row"><?php esc_html_e('Product Index ID', 'lupasearch'); ?></th>
                 <td>
                     <input type="text" name="<?php echo LupaSearch_Config::OPTION_PRODUCT_INDEX_ID; ?>"
                            value="<?php echo esc_attr(LupaSearch_Config::get_product_index_id()); ?>" class="regular-text">
-                    <p class="description">Your LupaSearch Product Index ID</p>
+                    <p class="description"><?php esc_html_e('Your LupaSearch Product Index ID', 'lupasearch'); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row">UI Plugin Configuration Key</th>
+                <th scope="row"><?php esc_html_e('UI Plugin Configuration Key', 'lupasearch'); ?></th>
                 <td>
                     <input type="text" name="<?php echo LupaSearch_Config::OPTION_UI_PLUGIN_KEY; ?>"
                            value="<?php echo esc_attr(LupaSearch_Config::get_ui_plugin_key()); ?>" class="regular-text">
-                    <p class="description">Your LupaSearch UI Plugin Configuration Key</p>
+                    <p class="description">
+                        <?php esc_html_e('Your LupaSearch UI Plugin Configuration Key.', 'lupasearch'); ?>
+                        <?php
+                        $organization = LupaSearch_Config::get_organization();
+                        $project = LupaSearch_Config::get_project();
+                        if (!empty($organization) && !empty($project)) {
+                            $ui_key_url = sprintf(
+                                'https://console.lupasearch.com/dashboard/%s/%s/plugin',
+                                rawurlencode($organization),
+                                rawurlencode($project)
+                            );
+                            echo ' <a href="' . esc_url($ui_key_url) . '" target="_blank">' . esc_html__('Get your UI Plugin Key here.', 'lupasearch') . '</a>';
+                        }
+                        ?>
+                    </p>
                 </td>
             </tr>
         </table>
@@ -352,24 +386,29 @@ class LupaSearch_Admin {
     // Add new method for logs tab
     private function render_logs_tab() {
         $sync = new LupaSearch_Sync();
-        $logs = $sync->get_logs(50); // Increased limit to 50 for logs tab
+        $logs = $sync->get_logs(50); // Limit for display, not total logs
         ?>
         <div class="lupasearch-sync-logs">
-            <h3>Synchronization Activity Log</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3><?php esc_html_e('Synchronization Activity Log', 'lupasearch'); ?></h3>
+                <button type="button" id="clear-lupasearch-logs" class="button button-secondary">
+                    <?php esc_html_e('Clear All Logs', 'lupasearch'); ?>
+                </button>
+            </div>
             <table class="widefat">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Action</th>
-                        <th>Product ID</th>
-                        <th>Status</th>
-                        <th>Message</th>
+                        <th><?php esc_html_e('Date', 'lupasearch'); ?></th>
+                        <th><?php esc_html_e('Action', 'lupasearch'); ?></th>
+                        <th><?php esc_html_e('Product ID', 'lupasearch'); ?></th>
+                        <th><?php esc_html_e('Status', 'lupasearch'); ?></th>
+                        <th><?php esc_html_e('Message', 'lupasearch'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($logs)): ?>
                         <tr>
-                            <td colspan="5">No synchronization activity recorded yet.</td>
+                            <td colspan="5"><?php esc_html_e('No synchronization activity recorded yet.', 'lupasearch'); ?></td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($logs as $log): ?>
@@ -397,54 +436,54 @@ class LupaSearch_Admin {
         $organization = LupaSearch_Config::get_organization();
         ?>
            <div class="lupasearch-integration-options">
-                <h3>Integration Options</h3>
+                <h3><?php esc_html_e('Integration Options', 'lupasearch'); ?></h3>
                 <div class="integration-methods">
                     <div class="integration-method">
-                        <h4>Shortcodes</h4>
-                        <p>Use these shortcodes to add search functionality to any page or post:</p>
+                        <h4><?php esc_html_e('Shortcodes', 'lupasearch'); ?></h4>
+                        <p><?php esc_html_e('Use these shortcodes to add search functionality to any page or post:', 'lupasearch'); ?></p>
                         <div class="code-snippet">
                             <code>[lupa_search_block]</code>
                         </div>
-                        <div class="description">Adds a search input box</div>
+                        <div class="description"><?php esc_html_e('Adds a search input box', 'lupasearch'); ?></div>
 
 
                         <div class="code-snippet">
                             <code>[lupa_search_results_block]</code>
                         </div>
-                        <div class="description">Adds a search results container</div>
+                        <div class="description"><?php esc_html_e('Adds a search results container', 'lupasearch'); ?></div>
 
                     </div>
 
                     <div class="integration-method">
-                        <h4>Gutenberg Blocks</h4>
-                        <p>Use the built-in Gutenberg blocks:</p>
+                        <h4><?php esc_html_e('Gutenberg Blocks', 'lupasearch'); ?></h4>
+                        <p><?php esc_html_e('Use the built-in Gutenberg blocks:', 'lupasearch'); ?></p>
                         <ul>
-                            <li><strong>LupaSearch Box</strong> - For adding a search input</li>
-                            <li><strong>LupaSearch Results</strong> - For displaying search results</li>
+                            <li><strong><?php esc_html_e('LupaSearch Box', 'lupasearch'); ?></strong> - <?php esc_html_e('For adding a search input', 'lupasearch'); ?></li>
+                            <li><strong><?php esc_html_e('LupaSearch Results', 'lupasearch'); ?></strong> - <?php esc_html_e('For displaying search results', 'lupasearch'); ?></li>
                         </ul>
                     </div>
 
                     <div class="integration-method">
-                        <h4>Widget</h4>
-                        <p>Add the LupaSearch Box widget to any widget area in your theme using the WordPress Widgets screen.</p>
+                        <h4><?php esc_html_e('Widget', 'lupasearch'); ?></h4>
+                        <p><?php esc_html_e('Add the LupaSearch Box widget to any widget area in your theme using the WordPress Widgets screen.', 'lupasearch'); ?></p>
                     </div>
                 </div>
 
                 <div class="integration-example">
-                    <h4>Example Implementation</h4>
+                    <h4><?php esc_html_e('Example Implementation', 'lupasearch'); ?></h4>
                     <ol style="padding-left: 20px;">
-                        <li>Add the search box to your header using the shortcode: <code>[lupa_search_block]</code></li>
-                        <li>Create a new page for search results</li>
-                        <li>Add the results block to that page: <code>[lupa_search_results_block]</code></li>
+                        <li><?php esc_html_e('Add the search box to your header using the shortcode:', 'lupasearch'); ?> <code>[lupa_search_block]</code></li>
+                        <li><?php esc_html_e('Create a new page for search results', 'lupasearch'); ?></li>
+                        <li><?php esc_html_e('Add the results block to that page:', 'lupasearch'); ?> <code>[lupa_search_results_block]</code></li>
                     </ol>
                 </div>
             </div>
 
         <div class="lupasearch-design-section">
-            <h3>Search UI Builder</h3>
+            <h3><?php esc_html_e('Search UI Builder', 'lupasearch'); ?></h3>
             <p class="description">
-                Design and customize your search experience using our visual Search UI Builder. 
-                Create a beautiful and functional search interface that matches your brand.
+                <?php esc_html_e('Design and customize your search experience using our visual Search UI Builder.', 'lupasearch'); ?>
+                <?php esc_html_e('Create a beautiful and functional search interface that matches your brand.', 'lupasearch'); ?>
             </p>
             
          
@@ -453,18 +492,18 @@ class LupaSearch_Admin {
                 <a href="<?php echo esc_url('https://console.lupasearch.com/dashboard/' . esc_attr($organization) . '/woocommerce/builder'); ?>" 
                    target="_blank" 
                    class="button button-primary button-hero">
-                    Open Search UI Builder
+                    <?php esc_html_e('Open Search UI Builder', 'lupasearch'); ?>
                 </a>
             </p>
             
             <div class="lupasearch-builder-features">
                 <ul>
-                    <li>Customize search box appearance</li>
-                    <li>Design search results layout</li>
-                    <li>Configure faceted filters</li>
-                    <li>Set up sorting options</li>
-                    <li>Adjust mobile responsiveness</li>
-                    <li>Preview changes in real-time</li>
+                    <li><?php esc_html_e('Customize search box appearance', 'lupasearch'); ?></li>
+                    <li><?php esc_html_e('Design search results layout', 'lupasearch'); ?></li>
+                    <li><?php esc_html_e('Configure faceted filters', 'lupasearch'); ?></li>
+                    <li><?php esc_html_e('Set up sorting options', 'lupasearch'); ?></li>
+                    <li><?php esc_html_e('Adjust mobile responsiveness', 'lupasearch'); ?></li>
+                    <li><?php esc_html_e('Preview changes in real-time', 'lupasearch'); ?></li>
                 </ul>
             </div>
 
@@ -472,7 +511,7 @@ class LupaSearch_Admin {
 
             <div class="lupasearch-builder-preview">
                 <img src="<?php echo esc_url(plugins_url('/images/search-builder.png', dirname(dirname(__FILE__)))); ?>" 
-                     alt="Search UI Builder Preview">
+                     alt="<?php esc_attr_e('Search UI Builder Preview', 'lupasearch'); ?>">
             </div>
         </div>
         <?php
@@ -482,23 +521,23 @@ class LupaSearch_Admin {
         return array(
             'organization' => array(
                 'status' => !empty(LupaSearch_Config::get_organization()),
-                'label' => 'Organization Name'
+                'label' => __('Organization Name', 'lupasearch')
             ),
             'project' => array(
                 'status' => !empty(LupaSearch_Config::get_project()),
-                'label' => 'Project Name'
+                'label' => __('Project Name', 'lupasearch')
             ),
             'api_key' => array(
                 'status' => !empty(LupaSearch_Config::get_api_key()),
-                'label' => 'API Key'
+                'label' => __('API Key', 'lupasearch')
             ),
             'ui_plugin_key' => array(
                 'status' => !empty(LupaSearch_Config::get_ui_plugin_key()),
-                'label' => 'UI Plugin Key'
+                'label' => __('UI Plugin Key', 'lupasearch')
             ),
             'product_index' => array(
                 'status' => !empty(LupaSearch_Config::get_product_index_id()),
-                'label' => 'Product Index ID'
+                'label' => __('Product Index ID', 'lupasearch')
             )
         );
     }
@@ -535,7 +574,7 @@ class LupaSearch_Admin {
         check_ajax_referer('lupasearch-admin-nonce', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Unauthorized');
+            wp_send_json_error(__('Unauthorized', 'lupasearch'));
         }
         
         $product_provider = new LupaSearch_Product_Provider();
@@ -548,7 +587,7 @@ class LupaSearch_Admin {
         check_ajax_referer('lupasearch-admin-nonce', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Unauthorized');
+            wp_send_json_error(__('Unauthorized', 'lupasearch'));
         }
         
         $generator = new LupaSearch_Document_Generator();
@@ -561,7 +600,7 @@ class LupaSearch_Admin {
         check_ajax_referer('lupasearch-admin-nonce', 'nonce');
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error('Unauthorized');
+            wp_send_json_error(__('Unauthorized', 'lupasearch'));
         }
         
         $generator = new LupaSearch_Document_Generator();
@@ -576,11 +615,29 @@ class LupaSearch_Admin {
         wp_send_json($result);
     }
 
+    public function ajax_clear_lupasearch_logs() {
+        check_ajax_referer('lupasearch-admin-nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Unauthorized', 'lupasearch'), 403);
+            return;
+        }
+        
+        $sync = new LupaSearch_Sync();
+        $result = $sync->clear_all_logs(); // This method needs to be created in LupaSearch_Sync
+        
+        if ($result) {
+            wp_send_json_success(array('message' => __('All logs cleared successfully.', 'lupasearch')));
+        } else {
+            wp_send_json_error(array('message' => __('Failed to clear logs.', 'lupasearch')));
+        }
+    }
+
     // Add this new method to handle unauthorized requests
     public function handle_unauthorized_request() {
         wp_send_json_error(array(
             'success' => false,
-            'message' => 'Unauthorized access'
+            'message' => __('Unauthorized access', 'lupasearch')
         ), 403);
     }
 
@@ -601,7 +658,7 @@ class LupaSearch_Admin {
         check_admin_referer('lupasearch_options-options');
 
         if (!current_user_can('manage_options')) {
-            wp_die('Unauthorized');
+            wp_die(__('Unauthorized', 'lupasearch'));
         }
 
         // Save all API-related settings regardless of active tab
@@ -627,6 +684,12 @@ class LupaSearch_Admin {
                 update_option('lupasearch_auto_sync', !empty($_POST['lupasearch_auto_sync']));
             } else {
                 update_option('lupasearch_auto_sync', false);
+            }
+
+            if (isset($_POST['lupasearch_override_wp_search'])) {
+                update_option('lupasearch_override_wp_search', !empty($_POST['lupasearch_override_wp_search']));
+            } else {
+                update_option('lupasearch_override_wp_search', false);
             }
         }
 

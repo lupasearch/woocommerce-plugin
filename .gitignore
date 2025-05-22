@@ -1,3 +1,2 @@
-blocks/node_modules/*
-blocks/build/
-build/*
+/blocks/node_modules
+/node_modules

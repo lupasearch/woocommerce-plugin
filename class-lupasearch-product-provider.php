@@ -17,6 +17,7 @@ class LupaSearch_Product_Provider {
         $formatted_products = array();
         
         foreach ($products as $product) {
+            $category_data = $this->get_product_categories_data($product);
             $formatted_products[] = array(
                 'id' => $product->get_id(),
                 'title' => $product->get_name(),
@@ -24,10 +25,14 @@ class LupaSearch_Product_Provider {
                 'description_short' => $product->get_short_description(),
                 'price' => $product->get_regular_price(),
                 'final_price' => $product->get_price(),
-                'categories' => $this->get_product_categories($product),
+                'category_names' => $category_data['names'],
+                'category_ids' => $category_data['ids'],
                 'images' => $this->get_product_images($product),
                 'main_image' => $this->get_main_image_url($product),
                 'url' => $product->get_permalink(),
+                'visibility' => $product->get_catalog_visibility(),
+                'stock_quantity' => $product->get_stock_quantity(),
+                'is_in_stock' => $product->is_in_stock(),
             );
         }
         
@@ -103,15 +108,41 @@ class LupaSearch_Product_Provider {
         );
     }
 
-    private function get_product_categories($product) {
-        $categories = array();
+    public function get_data_for_single_product(WC_Product $product_object) {
+        if (!$product_object) {
+            return null;
+        }
+
+        $category_data = $this->get_product_categories_data($product_object); // Pass WC_Product object
+
+        return array(
+            'id' => $product_object->get_id(),
+            'title' => $product_object->get_name(),
+            'description' => $product_object->get_description(),
+            'description_short' => $product_object->get_short_description(),
+            'price' => $product_object->get_regular_price(),
+            'final_price' => $product_object->get_price(),
+            'category_names' => $category_data['names'],
+            'category_ids' => $category_data['ids'],
+            'images' => $this->get_product_images($product_object), // Pass WC_Product object
+            'main_image' => $this->get_main_image_url($product_object), // Pass WC_Product object
+            'url' => $product_object->get_permalink(),
+            'visibility' => $product_object->get_catalog_visibility(),
+            'stock_quantity' => $product_object->get_stock_quantity(),
+            'is_in_stock' => $product_object->is_in_stock(),
+        );
+    }
+
+    private function get_product_categories_data($product) { // Parameter can remain $product as it's WC_Product
+        $categories_data = array('ids' => array(), 'names' => array());
         $terms = get_the_terms($product->get_id(), 'product_cat');
         if ($terms && !is_wp_error($terms)) {
             foreach ($terms as $term) {
-                $categories[] = $term->name;
+                $categories_data['ids'][] = $term->term_id;
+                $categories_data['names'][] = $term->name;
             }
         }
-        return $categories;
+        return $categories_data;
     }
 
     private function get_product_images($product) {

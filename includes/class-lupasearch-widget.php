@@ -7,8 +7,8 @@ class LupaSearch_Widget extends WP_Widget {
     public function __construct() {
         parent::__construct(
             'lupasearch_widget',
-            'LupaSearch Box',
-            array('description' => 'Adds LupaSearch search box to your site')
+            __('LupaSearch Box', 'lupasearch'),
+            array('description' => __('Adds LupaSearch search box to your site', 'lupasearch'))
         );
     }
 
@@ -27,7 +27,7 @@ class LupaSearch_Widget extends WP_Widget {
         $title = !empty($instance['title']) ? $instance['title'] : '';
         ?>
         <p>
-            <label for="<?php echo esc_attr($this->get_field_id('title')); ?>">Title:</label>
+            <label for="<?php echo esc_attr($this->get_field_id('title')); ?>"><?php esc_html_e('Title:', 'lupasearch'); ?></label>
             <input class="widefat" id="<?php echo esc_attr($this->get_field_id('title')); ?>" 
                    name="<?php echo esc_attr($this->get_field_name('title')); ?>" 
                    type="text" value="<?php echo esc_attr($title); ?>">

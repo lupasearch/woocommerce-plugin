@@ -1,11 +1,13 @@
 jQuery(document).ready(function($) {
+    const { __ } = wp.i18n;
+
     $('#test-connection').on('click', function() {
         const button = $(this);
         const statusEl = $('#connection-status');
         const detailsEl = $('#connection-details');
         
         button.prop('disabled', true);
-        statusEl.html('Testing connection...');
+        statusEl.html(__('Testing connection...', 'lupasearch'));
         
         $.ajax({
             url: lupaSearchAdmin.ajax_url,
@@ -16,31 +18,31 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    statusEl.html('<span style="color: green;">✓ Connected successfully</span>');
+                    statusEl.html('<span style="color: green;">' + __('✓ Connected successfully', 'lupasearch') + '</span>');
                     detailsEl.show();
                     
                     // Update stats
-                    $('#indexed-products').text(response.indexed_products || 0);
-                    $('#active-indices').text(response.indices.length);
+                    // $('#indexed-products').text(response.indexed_products || 0);
+                    // $('#active-indices').text(response.indices.length);
                     
                     // Render indices list
                     const indicesList = response.indices.map(index => `
                         <div class="index-item">
                             <span>${index.name} (${index.id})</span>
                             <span class="index-status ${index.isEnabled ? 'active' : 'inactive'}">
-                                ${index.isEnabled ? 'Active' : 'Inactive'}
+                                ${index.isEnabled ? __('Active', 'lupasearch') : __('Inactive', 'lupasearch')}
                             </span>
                         </div>
                     `).join('');
                     
                     $('#available-indices').html(indicesList);
                 } else {
-                    statusEl.html('<span style="color: red;">✕ ' + (response.message || 'Connection failed') + '</span>');
+                    statusEl.html('<span style="color: red;">✕ ' + (response.message || __('Connection failed', 'lupasearch')) + '</span>');
                     detailsEl.hide();
                 }
             },
             error: function() {
-                statusEl.html('<span style="color: red;">✕ Connection failed</span>');
+                statusEl.html('<span style="color: red;">✕ ' + __('Connection failed', 'lupasearch') + '</span>');
                 detailsEl.hide();
             },
             complete: function() {
@@ -54,7 +56,7 @@ jQuery(document).ready(function($) {
         const statusSpan = $('#generation-status');
         
         button.prop('disabled', true);
-        statusSpan.html('Generating documents...');
+        statusSpan.html(__('Generating documents...', 'lupasearch'));
         
         $.ajax({
             url: lupaSearchAdmin.ajax_url,
@@ -65,14 +67,14 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    statusSpan.html('<span style="color: green;">Documents generated successfully!</span>');
+                    statusSpan.html('<span style="color: green;">' + __('Documents generated successfully!', 'lupasearch') + '</span>');
                     downloadJSON(response.data, response.filename);
                 } else {
-                    statusSpan.html('<span style="color: red;">Generation failed: ' + response.message + '</span>');
+                    statusSpan.html('<span style="color: red;">' + __('Generation failed:', 'lupasearch') + ' ' + response.message + '</span>');
                 }
             },
             error: function() {
-                statusSpan.html('<span style="color: red;">Generation failed: Network error</span>');
+                statusSpan.html('<span style="color: red;">' + __('Generation failed: Network error', 'lupasearch') + '</span>');
             },
             complete: function() {
                 button.prop('disabled', false);
@@ -84,12 +86,12 @@ jQuery(document).ready(function($) {
         const button = $(this);
         const statusSpan = $('#generation-status');
         
-        if (!confirm('Are you sure you want to import documents to LupaSearch?')) {
+        if (!confirm(__('Are you sure you want to import documents to LupaSearch?', 'lupasearch'))) {
             return;
         }
         
         button.prop('disabled', true);
-        statusSpan.html('Importing documents to LupaSearch...');
+        statusSpan.html(__('Importing documents to LupaSearch...', 'lupasearch'));
         
         $.ajax({
             url: lupaSearchAdmin.ajax_url,
@@ -100,13 +102,13 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    statusSpan.html('<span style="color: green;">' + response.message + '</span>');
+                    statusSpan.html('<span style="color: green;">' + response.message + '</span>'); // Assuming response.message is already translated or a key
                 } else {
-                    statusSpan.html('<span style="color: red;">Import failed: ' + response.message + '</span>');
+                    statusSpan.html('<span style="color: red;">' + __('Import failed:', 'lupasearch') + ' ' + response.message + '</span>');
                 }
             },
             error: function() {
-                statusSpan.html('<span style="color: red;">Import failed: Network error</span>');
+                statusSpan.html('<span style="color: red;">' + __('Import failed: Network error', 'lupasearch') + '</span>');
             },
             complete: function() {
                 button.prop('disabled', false);
@@ -118,12 +120,12 @@ jQuery(document).ready(function($) {
         const button = $(this);
         const statusSpan = $('#reindex-status');
         
-        if (!confirm('Are you sure you want to reindex all products? This may take a while.')) {
+        if (!confirm(__('Are you sure you want to reindex all products? This may take a while.', 'lupasearch'))) {
             return;
         }
         
         button.prop('disabled', true);
-        statusSpan.html('Reindexing all products...');
+        statusSpan.html(__('Reindexing all products...', 'lupasearch'));
         
         $.ajax({
             url: lupaSearchAdmin.ajax_url,
@@ -134,14 +136,14 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    statusSpan.html('<span style="color: green;">' + response.message + '</span>');
+                    statusSpan.html('<span style="color: green;">' + response.message + '</span>'); // Assuming response.message is already translated or a key
                     setTimeout(() => location.reload(), 2000);
                 } else {
-                    statusSpan.html('<span style="color: red;">Reindex failed: ' + response.message + '</span>');
+                    statusSpan.html('<span style="color: red;">' + __('Reindex failed:', 'lupasearch') + ' ' + response.message + '</span>');
                 }
             },
             error: function() {
-                statusSpan.html('<span style="color: red;">Reindex failed: Network error</span>');
+                statusSpan.html('<span style="color: red;">' + __('Reindex failed: Network error', 'lupasearch') + '</span>');
             },
             complete: function() {
                 button.prop('disabled', false);
@@ -161,4 +163,40 @@ jQuery(document).ready(function($) {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
     }
+
+    // Clear LupaSearch Logs
+    $('#clear-lupasearch-logs').on('click', function() {
+        const button = $(this);
+        
+        if (!confirm(__('Are you sure you want to clear all LupaSearch activity logs? This action cannot be undone.', 'lupasearch'))) {
+            return;
+        }
+        
+        button.prop('disabled', true);
+        // Optionally, add a status message element near the button or logs table
+        // For now, we'll rely on an alert and page reload.
+
+        $.ajax({
+            url: lupaSearchAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'clear_lupasearch_logs',
+                nonce: lupaSearchAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.data.message || __('Logs cleared successfully.', 'lupasearch'));
+                    location.reload(); // Reload the page to show empty logs table
+                } else {
+                    alert(__('Failed to clear logs:', 'lupasearch') + ' ' + (response.data.message || __('Unknown error', 'lupasearch')));
+                }
+            },
+            error: function() {
+                alert(__('Failed to clear logs: Network error or unauthorized.', 'lupasearch'));
+            },
+            complete: function() {
+                button.prop('disabled', false);
+            }
+        });
+    });
 });

@@ -109,21 +109,49 @@ class LupaSearch_Document_Generator {
         $formatted_products = array();
 
         foreach ($products as $product) {
+            // Price logic:
+            // 'price' is the regular price.
+            // 'final_price' is the sale price, or regular price if not on sale.
+            $regular_price_raw = $product['price']; // From LupaSearch_Product_Provider
+            $sale_price_raw = $product['final_price']; // From LupaSearch_Product_Provider, this is WC's get_price()
+
+            $price_val = !empty($regular_price_raw) ? (float) $regular_price_raw : null;
+            // If sale_price_raw is empty OR if it's the same as regular_price_raw (meaning no specific sale price is set, WC get_price() returns regular)
+            // then final_price should be the same as price_val.
+            // If sale_price_raw is different and not empty, it's the actual final price.
+            $final_price_val = !empty($sale_price_raw) ? (float) $sale_price_raw : $price_val;
+            // Ensure final_price is not null if price_val is set
+            if (is_null($final_price_val) && !is_null($price_val)) {
+                $final_price_val = $price_val;
+            }
+
+
             $formatted_product = array(
                 'id' => $product['id'],
-                'name' => $product['title'],
-                'brand' => '', // Add brand if available in your WooCommerce setup
-                'color' => $this->get_product_attribute($product, 'color'),
-                'image' => $product['main_image'],
-                'price' => (float) $product['final_price'],
-                'author' => '', // Add author if applicable
-                'gender' => $this->get_product_attribute($product, 'gender'),
-                'rating' => $this->get_product_rating($product['id']),
-                'category' => implode(', ', $product['categories']),
+                'visibility' => $product['visibility'],
                 'description' => $product['description'],
-                'alternativeImages' => $product['images'],
-                'url' => $product['url'] // Add the product link
+                'description_short' => $product['description_short'],
+                'name' => $product['title'], // 'name' comes from 'title' in provider
+                'price' => $price_val,
+                'final_price' => $final_price_val,
+                'categories' => $product['category_names'] ?? [], // 'categories' are names
+                'category_ids' => $product['category_ids'] ?? [],
+                'images' => $product['images'] ?? [], // 'images' are gallery images
+                'image' => $product['main_image'] ?? '', // Renamed from main_image
+                'url' => $product['url'],
+                'qty' => isset($product['stock_quantity']) ? (int) $product['stock_quantity'] : 0,
+                'instock' => (bool) $product['is_in_stock'],
+                // Retain other fields if they are still relevant or add them as needed
+                // For example, rating and other attributes:
+                'rating' => $this->get_product_rating($product['id']),
+                // 'brand' => $this->get_product_attribute($product, 'brand'), // Example
+                // 'color' => $this->get_product_attribute($product, 'color'), // Example
             );
+
+            // Clean up any null values to avoid issues with LupaSearch indexing if it's strict
+            // $formatted_product = array_filter($formatted_product, function($value) {
+            //     return !is_null($value);
+            // });
 
             $formatted_products[] = $formatted_product;
         }
@@ -131,8 +159,52 @@ class LupaSearch_Document_Generator {
         return $formatted_products;
     }
 
+    public function format_single_product_from_data(array $product_data_from_provider) {
+        if (empty($product_data_from_provider) || !isset($product_data_from_provider['id'])) {
+            // Or throw an exception, or return an error structure
+            return null; 
+        }
+        
+        // Reuse the logic from format_products for a single item
+        // Price logic:
+        $regular_price_raw = $product_data_from_provider['price'];
+        $sale_price_raw = $product_data_from_provider['final_price'];
+
+        $price_val = !empty($regular_price_raw) ? (float) $regular_price_raw : null;
+        $final_price_val = !empty($sale_price_raw) ? (float) $sale_price_raw : $price_val;
+        if (is_null($final_price_val) && !is_null($price_val)) {
+            $final_price_val = $price_val;
+        }
+
+        $formatted_product = array(
+            'id' => $product_data_from_provider['id'],
+            'visibility' => $product_data_from_provider['visibility'],
+            'description' => $product_data_from_provider['description'],
+            'description_short' => $product_data_from_provider['description_short'],
+            'name' => $product_data_from_provider['title'], // 'name' comes from 'title' in provider
+            'price' => $price_val,
+            'final_price' => $final_price_val,
+            'categories' => $product_data_from_provider['category_names'] ?? [],
+            'category_ids' => $product_data_from_provider['category_ids'] ?? [],
+            'images' => $product_data_from_provider['images'] ?? [],
+            'image' => $product_data_from_provider['main_image'] ?? '', // Renamed from main_image
+            'url' => $product_data_from_provider['url'],
+            'qty' => isset($product_data_from_provider['stock_quantity']) ? (int) $product_data_from_provider['stock_quantity'] : 0,
+            'instock' => (bool) $product_data_from_provider['is_in_stock'],
+            'rating' => $this->get_product_rating($product_data_from_provider['id']),
+        );
+        
+        return $formatted_product;
+    }
+
     private function get_product_attribute($product, $attribute_name) {
-        $product_obj = wc_get_product($product['id']);
+        // $product here is expected to be the raw product data array from the provider
+        // which contains an 'id' key.
+        $product_id = isset($product['id']) ? $product['id'] : null;
+        if (!$product_id) {
+            return ''; // Or handle error appropriately
+        }
+        $product_obj = wc_get_product($product_id);
         if (!$product_obj) {
             return '';
         }

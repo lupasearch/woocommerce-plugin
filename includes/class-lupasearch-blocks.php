@@ -29,10 +29,10 @@ class LupaSearch_Blocks {
     }
 
     public function render_search_box() {
-        return '<div class="lupa-search-box-wrapper"><div id="searchBox"></div></div>';
+        return '<div><div id="searchBox"></div></div>';
     }
 
     public function render_search_results() {
-        return '<div class="lupa-search-results-wrapper"><div id="searchResults"></div></div>';
+        return '<div><div id="searchResults"></div></div>';
     }
 }
