@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 2,
+    "name": "lupasearch/search-box",
+    "version": "1.0.0",
+    "title": "LupaSearch Box",
+    "category": "widgets",
+    "icon": "search",
+    "description": "Add a LupaSearch search box to your content",
+    "supports": {
+        "html": false
+    },
+    "textdomain": "lupasearch",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style-index.css",
+    "script": "file:./index.js"
+}

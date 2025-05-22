@@ -1,0 +1,33 @@
+.lupasearch-admin-wrap {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.lupasearch-main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.lupasearch-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.lupasearch-general-tab {
+    max-width: 100%;
+}
+
+.lupasearch-documentation {
+    margin-top: 2rem;
+}
+
+@media screen and (max-width: 782px) {
+    .lupasearch-admin-wrap {
+        flex-direction: column;
+    }
+    
+    .lupasearch-sidebar {
+        width: 100%;
+    }
+}

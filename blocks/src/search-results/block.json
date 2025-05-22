@@ -1,0 +1,17 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 2,
+    "name": "lupasearch/search-results",
+    "version": "1.0.0",
+    "title": "LupaSearch Results",
+    "category": "widgets",
+    "icon": "list-view",
+    "description": "Display LupaSearch results",
+    "supports": {
+        "html": false
+    },
+    "textdomain": "lupasearch",
+    "editorScript": "file:./index.js",
+    "editorStyle": "file:./index.css",
+    "style": "file:./style-index.css"
+}

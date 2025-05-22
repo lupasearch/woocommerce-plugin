@@ -1,0 +1,451 @@
+.lupasearch-admin-wrap {
+    display: flex;
+    gap: 20px;
+}
+
+.lupasearch-main-content {
+    flex: 1;
+}
+
+.lupasearch-sidebar {
+    width: 300px;
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.lupasearch-status-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.status-icon {
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.status-success {
+    color: #46b450;
+}
+
+.status-error {
+    color: #dc3232;
+}
+
+.lupasearch-getting-started {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ccc;
+}
+
+.lupasearch-getting-started ul {
+    margin-left: 20px;
+    list-style-type: disc;
+}
+
+.lupasearch-getting-started li {
+    margin-bottom: 10px;
+}
+
+.lupasearch-getting-started a {
+    text-decoration: none;
+}
+
+.lupasearch-connection-status {
+    margin: 10px 0;
+}
+
+.connection-header {
+    margin-bottom: 15px;
+}
+
+.connection-details {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    background: white;
+    padding: 12px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.stat-item label {
+    display: block;
+    color: #666;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.stat-item strong {
+    display: block;
+    font-size: 18px;
+    color: #2271b1;
+}
+
+.indices-list {
+    margin-top: 15px;
+}
+
+.indices-list .index-item {
+    padding: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.index-item .index-status {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.index-status.active {
+    background: #edf7ed;
+    color: #2e7d32;
+}
+
+.index-status.inactive {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.lupasearch-connection {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ccc;
+}
+
+.lupasearch-connection h3 {
+    margin-bottom: 15px;
+}
+
+.lupasearch-connection .button {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#connection-status {
+    display: block;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.lupasearch-logo {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+}
+
+.lupasearch-logo img {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.lupasearch-logo .button {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.lupasearch-sample-data {
+    margin-top: 30px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: fit-content;
+}
+
+.lupasearch-sample-data h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #23282d;
+}
+
+.lupasearch-sample-data pre {
+    background: #f8f9fa;
+    padding: 15px;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+    overflow: auto;
+    max-height: 400px;
+    margin: 0;
+}
+
+.lupasearch-import-steps {
+    margin: 30px 0;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: fit-content;
+}
+
+.lupasearch-import-steps h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.steps-list li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #2271b1;
+    color: #fff;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-content h4 {
+    margin: 0 0 5px 0;
+    color: #23282d;
+}
+
+.step-content p {
+    margin: 0;
+    color: #646970;
+}
+
+.step-content a {
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.step-content a:hover {
+    color: #135e96;
+    text-decoration: underline;
+}
+
+.lupasearch-documentation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.lupasearch-sync-logs {
+    margin-top: 30px;
+}
+
+.lupasearch-sync-logs table {
+    margin-top: 10px;
+}
+
+.log-status {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.log-status.success {
+    background: #edf7ed;
+    color: #2e7d32;
+}
+
+.log-status.error {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.log-status.info {
+    background: #e8f4fd;
+    color: #0277bd;
+}
+
+.lupasearch-design-section {
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+.lupasearch-builder-preview {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.lupasearch-builder-preview img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lupasearch-builder-cta {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.lupasearch-builder-features {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 4px;
+    margin-top: 30px;
+}
+
+.lupasearch-builder-features ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lupasearch-builder-features li {
+    padding-left: 25px;
+    position: relative;
+    color: #646970;
+}
+
+.lupasearch-builder-features li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #46b450;
+}
+
+.api-settings-cta {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.api-settings-cta .button {
+    width: 100%;
+}
+
+.lupasearch-documentation-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.documentation-column {
+    min-width: 0;
+}
+
+.documentation-column pre {
+    background: #f5f5f5;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: auto;
+    margin: 0;
+}
+
+@media screen and (max-width: 782px) {
+    .lupasearch-documentation-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+.lupasearch-integration-options {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.integration-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin: 1.5rem 0;
+}
+
+.integration-method {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 4px;
+}
+
+.code-snippet {
+    background: #f1f1f1;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
+    border-radius: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.code-snippet code {
+    background: none;
+    padding: 0;
+}
+
+.code-snippet .description {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.integration-example {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ddd;
+}
+
+.integration-example ol {
+    margin: 1rem 0;
+}
+
+.integration-example li {
+    margin-bottom: 0.5rem;
+}
+
+.integration-example code {
+    background: #f1f1f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
